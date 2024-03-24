@@ -7,8 +7,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <algorithm>
-#include	<iostream>
+#include <iostream>
 
+long int random(void);
 
 typedef struct {
 	char* nume_poza;
@@ -266,6 +267,32 @@ void showHistogram(const std::string& name, int* hist, const int  hist_cols, con
 	waitKey(0);
 }
 
+int* generare_etichete(Train_Element* list, int size_list) {
+	srand(time(NULL));
+
+	//facem un nou vector pentru noile etichete generate random
+	int* etichete_generate = NULL;
+	int size_etichete_generate = size_list;
+	etichete_generate = (int*)malloc(size_etichete_generate * sizeof(int));
+
+	for (int i = 0; i < size_etichete_generate; i++) {
+		//generare eticheta random 1-6
+		int random_number = 1 + rand() % (6 - 1 + 1);
+		etichete_generate[i] = random_number;
+	}
+	return etichete_generate;
+}
+
+float calcul_acuratete(Train_Element* original, int* generate, int size) {
+	int ok = 0;
+	for (int i = 0; i < size; i++) {
+		if (original[i].eticheta == generate[i]) {
+			ok++;
+		}
+	}
+	float acc = (float)ok / size;
+	return acc;
+}
 
 //Functie care imparte train list-ul original in 2 liste: train(first 50%) si test (last 50%)
 //Nu am facut inca free la memorie pentru cele 2 liste noi :) sper sa nu uit
@@ -337,7 +364,7 @@ void split_train() {
 		printf("%d ", frecv_etichete[i]);
 	}
 	//desenam histograma in functie de frecventa etichetelor
-	showHistogram("Train Histogram", frecv_etichete, 200, 250);
+	//showHistogram("Train Histogram", frecv_etichete, 200, 250);
 
 
 	printf("\n");
@@ -358,8 +385,19 @@ void split_train() {
 		printf("%d ", frecv_etichete_test[i]);
 	}
 
-	showHistogram("Test Histogram", frecv_etichete_test, 200, 250);
+	//showHistogram("Test Histogram", frecv_etichete_test, 200, 250);
 
+
+
+	//generare de etichete aici
+	int* etichete_generate = generare_etichete(new_test_list, new_test_size);
+	for (int i = 0; i < new_test_size; i++) {
+		printf("Poza nr %d cu eticheta generata %d \n", i, etichete_generate[i]);
+	}
+
+	//calculam acuratetea in functie de cate etichete generate in mod random corect avem (pentru test_list)
+	float acc = calcul_acuratete(new_test_list, etichete_generate, new_test_size);
+	printf("Acuratete: %f \n", acc);
 
 	//free cum ne-a invatat Daddy Oprisa
 	free(etichete_train);
@@ -387,6 +425,7 @@ int main()
 		printf(" 4 - Process and show Test List\n");
 		printf(" 5 - Process and show Train List\n");
 		printf(" 6 - Split train\n");
+		printf(" 8 - Test generare etichete\n");
 		printf(" 0 - Exit\n\n");
 		printf("Option: ");
 		scanf("%d", &op);
