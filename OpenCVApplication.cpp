@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <algorithm>
+#include	<iostream>
 
 
 typedef struct {
@@ -174,7 +176,6 @@ Train_Element* read_train(const char* path, int* numRows) {
 	return list;
 }
 
-
 void freeTest(char** list, int size) {
 	if (!list) return;
 
@@ -192,41 +193,8 @@ void freeTrain(Train_Element* list, int size) {
 	free(list);
 }
 
-//am spart functia asta in 2 functii mai mici
-//void splitLists() {
-//	const char* test_path = "C:\\Users\\Razvan\\Documents\\UTCN\\UTCN\\An 3\\Sem 2\\PI\\Proiect\\test_WyRytb0.csv";
-//	const char* train_path = "C:\\Users\\Razvan\\Documents\\UTCN\\UTCN\\An 3\\Sem 2\\PI\\Proiect\\train-scene classification\\train.csv";
-//
-//	int size_test;
-//	int size_train;
-//
-//	char** test_list = read_test(test_path, &size_test);
-//	Train_Element* train_list = read_train(train_path, &size_train);
-//
-//	if (!test_list || !train_list) {
-//		fprintf(stderr, "Failed to read CSV file.\n");
-//	}
-//	printf("TEST LIST ROWS: %d\n", size_test);
-//	for (int i = 0; i < size_test; i++) {
-//		printf("%s\n", test_list[i]);
-//	}
-//	
-//	freeTest(test_list, size_test);
-//
-//	printf("\n");
-//
-//	printf("TRAIN LIST ROWS: %d\n", size_train);
-//	for (int i = 0; i < size_train; i++) {
-//		printf("Nume: %s, Eticheta: %d\n", train_list[i].nume_poza, train_list[i].eticheta);
-//	}
-//
-//	freeTrain(train_list, size_train);  
-//
-//
-//}
-
 void process_test_list() {
-	const char* test_path = "C:\\Users\\Razvan\\Documents\\UTCN\\UTCN\\An 3\\Sem 2\\PI\\Proiect\\test_WyRytb0.csv";
+	const char* test_path = "C:\\Users\\Razvan\\Documents\\UTCN\\UTCN\\An 3\\Sem 2\\PI\\kaggle dataset\\test_WyRytb0.csv";
 	int size_test;
 	char** test_list = read_test(test_path, &size_test);
 	if (!test_list) {
@@ -244,21 +212,165 @@ void process_test_list() {
 }
 
 void process_train_list() {
-	const char* train_path = "C:\\Users\\Razvan\\Documents\\UTCN\\UTCN\\An 3\\Sem 2\\PI\\Proiect\\train-scene classification\\train.csv";
+	const char* train_path = "C:\\Users\\Razvan\\Documents\\UTCN\\UTCN\\An 3\\Sem 2\\PI\\kaggle dataset\\train-scene classification\\train.csv";
 	int size_train;
 	Train_Element* train_list = read_train(train_path, &size_train);
 	if (!train_list) {
 		fprintf(stderr, "Failed to read CSV file.\n");
 	}
 
-	printf("TRAIN LIST ROWS: %d\n", size_train);
+	
 	for (int i = 0; i < size_train; i++) {
 		printf("Nume: %s, Eticheta: %d\n", train_list[i].nume_poza, train_list[i].eticheta);
 	}
+	printf("TRAIN LIST ROWS: %d\n", size_train - 1);
 
 	freeTrain(train_list, size_train);
 	printf("\n");
 }
+
+//Functie preluata din laborator
+/* Histogram display function - display a histogram using bars (simlilar to L3 / Image Processing)
+Input:
+name - destination (output) window name
+hist - pointer to the vector containing the histogram values
+hist_cols - no. of bins (elements) in the histogram = histogram image width
+hist_height - height of the histogram image
+Call example:
+showHistogram ("MyHist", hist_dir, 255, 200);
+*/
+void showHistogram(const std::string& name, int* hist, const int  hist_cols, const int hist_height)
+{
+	Mat imgHist(hist_height, hist_cols, CV_8UC3, CV_RGB(255, 255, 255)); // constructs a white image
+
+	//computes histogram maximum
+	int max_hist = 0;
+	for (int i = 0; i < hist_cols; i++)
+		if (hist[i] > max_hist)
+			max_hist = hist[i];
+	double scale = 1.0;
+	scale = (double)hist_height / max_hist;
+	int baseline = hist_height - 1;
+
+	// calculate the width of each bin
+	int bin_width = imgHist.cols / hist_cols;
+
+
+	for (int x = 0; x < hist_cols; x++) {
+		Point p1 = Point(x * bin_width, baseline);
+		Point p2 = Point(x * bin_width, baseline - cvRound(hist[x] * scale));
+		line(imgHist, p1, p2, CV_RGB(255, 0, 255)); // histogram bins colored in magenta
+	}
+
+	imshow(name, imgHist);
+	waitKey(0);
+}
+
+
+//Functie care imparte train list-ul original in 2 liste: train(first 50%) si test (last 50%)
+//Nu am facut inca free la memorie pentru cele 2 liste noi :) sper sa nu uit
+//Momentan, histogramele sunt afisate din aceasta functie, ulterior trebuie mutate separat
+void split_train() {
+	const char* train_path = "C:\\Users\\Razvan\\Documents\\UTCN\\UTCN\\An 3\\Sem 2\\PI\\kaggle dataset\\train-scene classification\\train.csv";
+	int size_train;
+	Train_Element* train_list = read_train(train_path, &size_train);
+
+	Train_Element* new_train_list = NULL;
+	Train_Element* new_test_list = NULL;
+
+	int new_train_size = size_train / 2;
+	int new_test_size = size_train - new_train_size;
+
+	new_train_list = (Train_Element*)malloc(new_train_size * sizeof(Train_Element));
+	if (!new_train_list) {
+		printf("Memory allocation failed for the first list\n");
+		exit(1);
+	}
+
+	new_test_list = (Train_Element*)malloc(new_test_size * sizeof(Train_Element));
+	if (!new_test_list) {
+		printf("Memory allocation failed for the second list\n");
+		exit(1);
+	}
+
+	for (int i = 0; i < new_train_size; i++) {
+		new_train_list[i] = train_list[i];
+	}
+
+	for (int i = 0; i < new_test_size; i++) {
+		new_test_list[i] = train_list[i + new_train_size];
+	}
+
+
+	for (int i = 0; i < new_train_size; i++) {
+		printf("Train list / Nume: %s, Eticheta: %d\n", new_train_list[i].nume_poza, new_train_list[i].eticheta);
+	}
+	for (int i = 0; i < new_test_size; i++) {
+		printf("Test list / Nume: %s, Eticheta: %d\n", new_test_list[i].nume_poza, new_test_list[i].eticheta);
+	}
+
+	printf("Original list size: %d \n", size_train);
+	printf("Train list size: %d \n", new_train_size);
+	printf("Test list size: %d \n", new_test_size);
+
+	//test pentru histograma
+	//o voi muta separat mai incolo
+
+	//pentru histograma trebuie calculata frecventa etichetelor 
+	
+
+	//Nou vector care contine doar etichetele din train
+	int* etichete_train = NULL;
+	etichete_train = (int*)malloc(new_train_size * sizeof(int));
+	for (int i = 0; i < new_train_size; i++) {
+		etichete_train[i] = new_train_list[i].eticheta;
+	}
+
+	//vector care contine frecventa etichetelor din train
+	int size = 6;
+	int* frecv_etichete = NULL;
+	frecv_etichete = (int*)malloc(size * sizeof(int));
+	for (int i = 0; i < size; i++) {
+		frecv_etichete[i] = std::count(etichete_train, etichete_train + new_train_size, i+1);
+	}
+	for (int i = 0; i < size; i++) {
+		printf("%d ", frecv_etichete[i]);
+	}
+	//desenam histograma in functie de frecventa etichetelor
+	showHistogram("Train Histogram", frecv_etichete, 200, 250);
+
+
+	printf("\n");
+
+	//Nou vector care contine doar etichetele din test
+	int* etichete_test = NULL;
+	etichete_test = (int*)malloc(new_test_size * sizeof(int));
+	for (int i = 0; i < new_test_size; i++) {
+		etichete_test[i] = new_test_list[i].eticheta;
+	}
+
+	int* frecv_etichete_test = NULL;
+	frecv_etichete_test = (int*)malloc(size * sizeof(int));
+	for (int i = 0; i < size; i++) {
+		frecv_etichete_test[i] = std::count(etichete_test, etichete_test + new_test_size, i + 1);
+	}
+	for (int i = 0; i < size; i++) {
+		printf("%d ", frecv_etichete_test[i]);
+	}
+
+	showHistogram("Test Histogram", frecv_etichete_test, 200, 250);
+
+
+	//free cum ne-a invatat Daddy Oprisa
+	free(etichete_train);
+	free(frecv_etichete);
+	free(etichete_test);
+	free(frecv_etichete_test);
+	freeTrain(train_list, size_train);
+	printf("\n");
+}
+
+
 
 
 int main()
@@ -274,6 +386,7 @@ int main()
 		printf(" 3 - Color to Gray\n");
 		printf(" 4 - Process and show Test List\n");
 		printf(" 5 - Process and show Train List\n");
+		printf(" 6 - Split train\n");
 		printf(" 0 - Exit\n\n");
 		printf("Option: ");
 		scanf("%d", &op);
@@ -294,6 +407,12 @@ int main()
 		case 5:
 			process_train_list();
 			break;
+		case 6:
+			split_train();
+		//	break;
+		//case 7:
+		//	showHistogram();
+		//	break;
 		}
 	} while (op != 0);
 	return 0;
