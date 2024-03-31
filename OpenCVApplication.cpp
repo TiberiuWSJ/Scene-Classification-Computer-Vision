@@ -77,6 +77,7 @@ void testColor2Gray()
 	}
 }
 
+//Functie care citeste csv-ul orifinal cu test
 char** read_test(const char* path, int* numRows) {
 	FILE* file = fopen(path, "r"); 
 	if (!file) {
@@ -119,6 +120,7 @@ char** read_test(const char* path, int* numRows) {
 	return list;
 }
 
+//Functie care citeste csv-ul orifinal cu train
 Train_Element* read_train(const char* path, int* numRows) {
 	FILE* file = fopen(path, "r"); 
 	if (!file) {
@@ -194,6 +196,8 @@ void freeTrain(Train_Element* list, int size) {
 	free(list);
 }
 
+//Functia asta proceseaza lista test originala
+//Nu mai folosim functia asta
 void process_test_list() {
 	const char* test_path = "C:\\Users\\Razvan\\Documents\\UTCN\\UTCN\\An 3\\Sem 2\\PI\\kaggle dataset\\test_WyRytb0.csv";
 	int size_test;
@@ -212,6 +216,8 @@ void process_test_list() {
 
 }
 
+//Functia asta proceseaza lista train originala
+//nu mai folosim functia asta
 void process_train_list() {
 	const char* train_path = "C:\\Users\\Razvan\\Documents\\UTCN\\UTCN\\An 3\\Sem 2\\PI\\kaggle dataset\\train-scene classification\\train.csv";
 	int size_train;
@@ -267,7 +273,8 @@ void showHistogram(const std::string& name, int* hist, const int  hist_cols, con
 	waitKey(0);
 }
 
-int* generare_etichete(Train_Element* list, int size_list) {
+// Input: o lista de struct cu nume poza si eticheta -> Output: o lista cu etichete generate random
+int* generare_etichete(int size_list) {
 	srand(time(NULL));
 
 	//facem un nou vector pentru noile etichete generate random
@@ -283,6 +290,7 @@ int* generare_etichete(Train_Element* list, int size_list) {
 	return etichete_generate;
 }
 
+//calcul acuratete
 float calcul_acuratete(Train_Element* original, int* generate, int size) {
 	int ok = 0;
 	for (int i = 0; i < size; i++) {
@@ -294,13 +302,126 @@ float calcul_acuratete(Train_Element* original, int* generate, int size) {
 	return acc;
 }
 
-//Functie care imparte train list-ul original in 2 liste: train(first 50%) si test (last 50%)
-//Nu am facut inca free la memorie pentru cele 2 liste noi :) sper sa nu uit
-//Momentan, histogramele sunt afisate din aceasta functie, ulterior trebuie mutate separat
-void split_train() {
-	const char* train_path = "C:\\Users\\Razvan\\Documents\\UTCN\\UTCN\\An 3\\Sem 2\\PI\\kaggle dataset\\train-scene classification\\train.csv";
+void afisare_acuratete(Train_Element* test_list, int* etichete_generate, int size) {
+	//calculam acuratetea in functie de cate etichete generate in mod random corect avem (pentru test_list)
+	float acc = calcul_acuratete(test_list, etichete_generate, size);
+	printf("Acuratete: %f \n", acc);
+}
+
+
+void show_split_train(Train_Element* new_train_list, Train_Element* new_test_list, int new_train_size, int new_test_size) {
+	for (int i = 0; i < new_train_size; i++) {
+		printf("Train list / Nume: %s, Eticheta: %d\n", new_train_list[i].nume_poza, new_train_list[i].eticheta);
+	}
+	for (int i = 0; i < new_test_size; i++) {
+		printf("Test list / Nume: %s, Eticheta: %d\n", new_test_list[i].nume_poza, new_test_list[i].eticheta);
+
+	}
+	printf("Train list size: %d \n", new_train_size);
+	printf("Test list size: %d \n", new_test_size);
+
+}
+
+void histograme_test_train(Train_Element* train_list, Train_Element* test_list, int train_size, int test_size) {
+	//Nou vector care contine doar etichetele din train
+	int* etichete_train = NULL;
+	etichete_train = (int*)malloc(train_size * sizeof(int));
+	for (int i = 0; i < train_size; i++) {
+		etichete_train[i] = train_list[i].eticheta;
+	}
+
+	//vector care contine frecventa etichetelor din train
+	int size = 6;
+	int* frecv_etichete = NULL;
+	frecv_etichete = (int*)malloc(size * sizeof(int));
+	for (int i = 0; i < size; i++) {
+		frecv_etichete[i] = std::count(etichete_train, etichete_train + train_size, i + 1);
+	}
+	for (int i = 0; i < size; i++) {
+		printf("%d ", frecv_etichete[i]);
+	}
+	//desenam histograma in functie de frecventa etichetelor
+	showHistogram("Train Histogram", frecv_etichete, 200, 250);
+
+
+	printf("\n");
+
+	//Nou vector care contine doar etichetele din test
+	int* etichete_test = NULL;
+	etichete_test = (int*)malloc(test_size * sizeof(int));
+	for (int i = 0; i < test_size; i++) {
+		etichete_test[i] = test_list[i].eticheta;
+	}
+
+	int* frecv_etichete_test = NULL;
+	frecv_etichete_test = (int*)malloc(size * sizeof(int));
+	for (int i = 0; i < size; i++) {
+		frecv_etichete_test[i] = std::count(etichete_test, etichete_test + test_size, i + 1);
+	}
+	for (int i = 0; i < size; i++) {
+		printf("%d ", frecv_etichete_test[i]);
+	}
+
+	showHistogram("Test Histogram", frecv_etichete_test, 200, 250);
+
+	free(etichete_train);
+	free(etichete_test);
+}
+
+void afisare_etichete(Train_Element* test_list, int size) {
+	int* etichete_generate = generare_etichete(size);
+	for (int i = 0; i < size; i++) {
+		printf("Poza: %s cu eticheta generata %d \n", test_list[i].nume_poza, etichete_generate[i]);
+	}
+}
+
+
+void clearInputBuffer() {
+	int c;
+	while ((c = getchar()) != '\n' && c != EOF);
+}
+
+
+char* get_path() {
+	printf("Enter the path to the original train.csv file: ");
+
+	char* path = (char*)malloc(1024 * sizeof(char));
+	if (!path) {
+		perror("Memory allocation failed");
+		exit(EXIT_FAILURE);
+	}
+
+	if (!fgets(path, 1024, stdin)) {
+		free(path);
+		perror("Error reading input");
+		exit(EXIT_FAILURE);
+	}
+
+	// Removing trailing newline character, if any
+	size_t len = strlen(path);
+	if (len > 0 && path[len - 1] == '\n') {
+		path[len - 1] = '\0';
+	}
+
+	return path;
+}
+
+
+int main()
+{
+
+	char* path = get_path();
+	char* copied_path = (char*)malloc(sizeof(char) * (strlen(path) + 1));
+	strcpy(copied_path, path);
+	//char* path = NULL;
+	//char* copied_path = NULL;
+	int op;
+	char buffer[100];
+
+	
+	//Citim CSV-ul original cu train si impartim 50/50 in alte 2 liste: new_train si new_test
 	int size_train;
-	Train_Element* train_list = read_train(train_path, &size_train);
+	Train_Element* train_list = read_train(copied_path, &size_train);
 
 	Train_Element* new_train_list = NULL;
 	Train_Element* new_test_list = NULL;
@@ -328,92 +449,9 @@ void split_train() {
 		new_test_list[i] = train_list[i + new_train_size];
 	}
 
+	//array cu etichetele generate random pentru test 
+	int* etichete_generate = generare_etichete(new_test_size);
 
-	for (int i = 0; i < new_train_size; i++) {
-		printf("Train list / Nume: %s, Eticheta: %d\n", new_train_list[i].nume_poza, new_train_list[i].eticheta);
-	}
-	for (int i = 0; i < new_test_size; i++) {
-		printf("Test list / Nume: %s, Eticheta: %d\n", new_test_list[i].nume_poza, new_test_list[i].eticheta);
-	}
-
-	printf("Original list size: %d \n", size_train);
-	printf("Train list size: %d \n", new_train_size);
-	printf("Test list size: %d \n", new_test_size);
-
-	//test pentru histograma
-	//o voi muta separat mai incolo
-
-	//pentru histograma trebuie calculata frecventa etichetelor 
-	
-
-	//Nou vector care contine doar etichetele din train
-	int* etichete_train = NULL;
-	etichete_train = (int*)malloc(new_train_size * sizeof(int));
-	for (int i = 0; i < new_train_size; i++) {
-		etichete_train[i] = new_train_list[i].eticheta;
-	}
-
-	//vector care contine frecventa etichetelor din train
-	int size = 6;
-	int* frecv_etichete = NULL;
-	frecv_etichete = (int*)malloc(size * sizeof(int));
-	for (int i = 0; i < size; i++) {
-		frecv_etichete[i] = std::count(etichete_train, etichete_train + new_train_size, i+1);
-	}
-	for (int i = 0; i < size; i++) {
-		printf("%d ", frecv_etichete[i]);
-	}
-	//desenam histograma in functie de frecventa etichetelor
-	//showHistogram("Train Histogram", frecv_etichete, 200, 250);
-
-
-	printf("\n");
-
-	//Nou vector care contine doar etichetele din test
-	int* etichete_test = NULL;
-	etichete_test = (int*)malloc(new_test_size * sizeof(int));
-	for (int i = 0; i < new_test_size; i++) {
-		etichete_test[i] = new_test_list[i].eticheta;
-	}
-
-	int* frecv_etichete_test = NULL;
-	frecv_etichete_test = (int*)malloc(size * sizeof(int));
-	for (int i = 0; i < size; i++) {
-		frecv_etichete_test[i] = std::count(etichete_test, etichete_test + new_test_size, i + 1);
-	}
-	for (int i = 0; i < size; i++) {
-		printf("%d ", frecv_etichete_test[i]);
-	}
-
-	//showHistogram("Test Histogram", frecv_etichete_test, 200, 250);
-
-
-
-	//generare de etichete aici
-	int* etichete_generate = generare_etichete(new_test_list, new_test_size);
-	for (int i = 0; i < new_test_size; i++) {
-		printf("Poza nr %d cu eticheta generata %d \n", i, etichete_generate[i]);
-	}
-
-	//calculam acuratetea in functie de cate etichete generate in mod random corect avem (pentru test_list)
-	float acc = calcul_acuratete(new_test_list, etichete_generate, new_test_size);
-	printf("Acuratete: %f \n", acc);
-
-	//free cum ne-a invatat Daddy Oprisa
-	free(etichete_train);
-	free(frecv_etichete);
-	free(etichete_test);
-	free(frecv_etichete_test);
-	freeTrain(train_list, size_train);
-	printf("\n");
-}
-
-
-
-
-int main()
-{
-	int op;
 	do
 	{
 		//system("cls");
@@ -422,13 +460,14 @@ int main()
 		printf(" 1 - Basic image opening...\n");
 		printf(" 2 - Open BMP images from folder\n");
 		printf(" 3 - Color to Gray\n");
-		printf(" 4 - Process and show Test List\n");
-		printf(" 5 - Process and show Train List\n");
-		printf(" 6 - Split train\n");
-		printf(" 8 - Test generare etichete\n");
+		printf(" 4 - Afisare liste train si test\n");
+		printf(" 5 - Afisare etichete generate random (pt test)\n");
+		printf(" 6 - Afisare acuratete\n");
 		printf(" 0 - Exit\n\n");
 		printf("Option: ");
-		scanf("%d", &op);
+		//scanf("%d", &op);
+		fgets(buffer, sizeof(buffer), stdin);
+		sscanf(buffer, "%d", &op);
 		switch (op)
 		{
 		case 1:
@@ -441,18 +480,17 @@ int main()
 			testColor2Gray();
 			break;
 		case 4:
-			process_test_list();
+			show_split_train(new_train_list, new_test_list, new_train_size, new_test_size);
 			break;
 		case 5:
-			process_train_list();
+			afisare_etichete(new_test_list, new_test_size);
 			break;
 		case 6:
-			split_train();
-		//	break;
-		//case 7:
-		//	showHistogram();
-		//	break;
+			afisare_acuratete(new_test_list, etichete_generate, new_test_size);
+			break;
 		}
 	} while (op != 0);
+
+	free(path);
 	return 0;
 }
