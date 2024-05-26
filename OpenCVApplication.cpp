@@ -18,6 +18,21 @@ typedef struct {
 
 #define MAX_LINE_LENGTH 1024
 
+typedef struct {
+	float red;
+	float green;
+	float blue;
+}color;
+
+typedef struct {
+	color* buildings;
+	color* forests;
+	color* mountains;
+	color* glacier;
+	color* street;
+	color* sea;
+}average_class;
+
 void testOpenImage()
 {
 	char fname[MAX_PATH];
@@ -140,6 +155,7 @@ Train_Element* read_train(const char* path, int* numRows) {
 	}
 
 	char line[MAX_LINE_LENGTH];
+	fgets(line, sizeof(line), file);
 	while (fgets(line, sizeof(line), file)) {
 
 		line[strcspn(line, "\n")] = '\0';
@@ -178,6 +194,7 @@ Train_Element* read_train(const char* path, int* numRows) {
 	fclose(file);
 	return list;
 }
+
 
 void freeTest(char** list, int size) {
 	if (!list) return;
@@ -417,46 +434,53 @@ int clasificaScena(float* procentaje) {
 	return eticheta;
 }
 
-int clasificaScena2(float* procente) {
-	float score = 0;
-	float maxScore = 0;
-	int eticheta = 0;
+float calculateDistance(color a, color b) {
+	return sqrt(pow(a.red - b.red, 2) + pow(a.green - b.green, 2) + pow(a.blue - b.blue, 2));
+}
 
-	score = procente[0] * 1.2 + procente[2] * 0.5;
-	if (score > maxScore) {
-		maxScore = score;
-		eticheta = 6;
-	}
-	score = procente[1] * 1.5;
-	if (score > maxScore) {
-		maxScore = score;
+// Function to classify an image based on its RGB percentages
+int clasificaScena2(float* procente, average_class* class_average) {
+	color image_avg = { procente[2], procente[1], procente[0] }; // Assuming procente contains RGB in order B, G, R
+
+	float minDistance = calculateDistance(image_avg, *(class_average->buildings));
+	int eticheta = 1;
+
+	float distance = calculateDistance(image_avg, *(class_average->forests));
+	if (distance < minDistance) {
+		minDistance = distance;
 		eticheta = 2;
 	}
-	score = procente[0] * 1.1 + procente[1] * 0.8 + procente[2] * 0.3;
-	if (score > maxScore) {
-		maxScore = score;
-		eticheta = 4;
-	}
-	score = procente[1] * 1.0 + procente[2] * 1.0;
-	if (score > maxScore) {
-		maxScore = score;
+
+	distance = calculateDistance(image_avg, *(class_average->glacier));
+	if (distance < minDistance) {
+		minDistance = distance;
 		eticheta = 3;
 	}
-	score = procente[2] * 1.3;
-	if (score > maxScore) {
-		maxScore = score;
-		eticheta = 1;
+
+	distance = calculateDistance(image_avg, *(class_average->mountains));
+	if (distance < minDistance) {
+		minDistance = distance;
+		eticheta = 4;
 	}
-	score = procente[2] * 0.8 + procente[0] * 0.7;
-	if (score > maxScore) {
-		maxScore = score;
+
+	distance = calculateDistance(image_avg, *(class_average->street));
+	if (distance < minDistance) {
+		minDistance = distance;
 		eticheta = 5;
 	}
+
+	distance = calculateDistance(image_avg, *(class_average->sea));
+	if (distance < minDistance) {
+		minDistance = distance;
+		eticheta = 6;
+	}
+
 	return eticheta;
 }
 
 
-int* generare_etichete_smart2(Train_Element* original, int size_list) {
+
+int* generare_etichete_smart2(Train_Element* original, int size_list,average_class *class_average) {
 	srand(time(NULL));
 
 	//facem un nou vector pentru noile etichete generate random
@@ -486,7 +510,7 @@ int* generare_etichete_smart2(Train_Element* original, int size_list) {
 				maxim = procentaje[j];
 			}
 		}
-		etichete_generate[i] = clasificaScena2(procentaje);
+		etichete_generate[i] = clasificaScena2(procentaje,class_average);
 	}
 	free(procentaje);
 	return etichete_generate;
@@ -523,6 +547,114 @@ void show_split_train(Train_Element* new_train_list, Train_Element* new_test_lis
 	printf("Test list size: %d \n", new_test_size);
 
 }
+
+void getAverages(average_class* class_average, Train_Element* train_list, int train_size) {
+	const char* copied_path = "D:\\3_II\\PI\\OpenCV\\OpenCVApplication-VS2022_OCV490_basic\\OpenCVApplication-VS2022_OCV490_basic\\Images\\train-scene-classification\\train\\";
+	int lungime_path = strlen(copied_path);
+	float* procentaje = (float*)calloc(3, sizeof(float));
+
+	int buildings = 0;
+	int forests = 0;
+	int mountains = 0;
+	int glacier = 0;
+	int street = 0;
+	int sea = 0;
+
+	for (int i = 0; i < train_size; i++) {
+		char* poza = train_list[i].nume_poza;
+		int lungime_poza = strlen(poza) + lungime_path + 1;
+		char* path_poza = new char[lungime_poza];
+		strcpy(path_poza, copied_path);
+		strcat(path_poza, poza);
+
+		showHistogram_poza(&procentaje, path_poza);
+		switch (train_list[i].eticheta) {
+		case 1:
+			if (buildings > 0) {
+				class_average->buildings->red = (class_average->buildings->red * buildings + procentaje[2]) / (buildings + 1);
+				class_average->buildings->green = (class_average->buildings->green * buildings + procentaje[1]) / (buildings + 1);
+				class_average->buildings->blue = (class_average->buildings->blue * buildings + procentaje[0]) / (buildings + 1);
+			}
+			else {
+				class_average->buildings->red = procentaje[2];
+				class_average->buildings->green = procentaje[1];
+				class_average->buildings->blue = procentaje[0];
+			}
+			buildings++;
+			break;
+		case 2:
+			if (forests > 0) {
+				class_average->forests->red = (class_average->forests->red * forests + procentaje[2]) / (forests + 1);
+				class_average->forests->green = (class_average->forests->green * forests + procentaje[1]) / (forests + 1);
+				class_average->forests->blue = (class_average->forests->blue * forests + procentaje[0]) / (forests + 1);
+			}
+			else {
+				class_average->forests->red = procentaje[2];
+				class_average->forests->green = procentaje[1];
+				class_average->forests->blue = procentaje[0];
+			}
+			forests++;
+			break;
+		case 3:
+			if (mountains > 0) {
+				class_average->mountains->red = (class_average->mountains->red * mountains + procentaje[2]) / (mountains + 1);
+				class_average->mountains->green = (class_average->mountains->green * mountains + procentaje[1]) / (mountains + 1);
+				class_average->mountains->blue = (class_average->mountains->blue * mountains + procentaje[0]) / (mountains + 1);
+			}
+			else {
+				class_average->mountains->red = procentaje[2];
+				class_average->mountains->green = procentaje[1];
+				class_average->mountains->blue = procentaje[0];
+			}
+			mountains++;
+			break;
+		case 4:
+			if (glacier > 0) {
+				class_average->glacier->red = (class_average->glacier->red * glacier + procentaje[2]) / (glacier + 1);
+				class_average->glacier->green = (class_average->glacier->green * glacier + procentaje[1]) / (glacier + 1);
+				class_average->glacier->blue = (class_average->glacier->blue * glacier + procentaje[0]) / (glacier + 1);
+			}
+			else {
+				class_average->glacier->red = procentaje[2];
+				class_average->glacier->green = procentaje[1];
+				class_average->glacier->blue = procentaje[0];
+			}
+			glacier++;
+			break;
+		case 5:
+			if (street > 0) {
+				class_average->street->red = (class_average->street->red * street + procentaje[2]) / (street + 1);
+				class_average->street->green = (class_average->street->green * street + procentaje[1]) / (street + 1);
+				class_average->street->blue = (class_average->street->blue * street + procentaje[0]) / (street + 1);
+			}
+			else {
+				class_average->street->red = procentaje[2];
+				class_average->street->green = procentaje[1];
+				class_average->street->blue = procentaje[0];
+			}
+			street++;
+			break;
+		case 6:
+			if (sea > 0) {
+				class_average->sea->red = (class_average->sea->red * sea + procentaje[2]) / (sea + 1);
+				class_average->sea->green = (class_average->sea->green * sea + procentaje[1]) / (sea + 1);
+				class_average->sea->blue = (class_average->sea->blue * sea + procentaje[0]) / (sea + 1);
+			}
+			else {
+				class_average->sea->red = procentaje[2];
+				class_average->sea->green = procentaje[1];
+				class_average->sea->blue = procentaje[0];
+			}
+			sea++;
+			break;
+		default:
+			break;
+		}
+		delete[] path_poza;
+	}
+	free(procentaje);
+}
+
 
 void normalizeAndPrintConfusionMatrix(float matrix[6][6]) {
 	const int numClasses = 6; // Number of classes
@@ -648,6 +780,14 @@ char* get_path() {
 	return path;
 }
 
+void afisareClase(average_class class_average) {
+	printf("Buildings:Rosu:%.2f,Green:%.2f,Albastru:%.2f\n", class_average.buildings->red, class_average.buildings->green, class_average.buildings->blue);
+	printf("Forests:Rosu:%.2f,Green:%.2f,Albastru:%.2f\n", class_average.forests->red, class_average.forests->green, class_average.forests->blue);
+	printf("Glacier:Rosu:%.2f,Green:%.2f,Albastru:%.2f\n", class_average.glacier->red, class_average.glacier->green, class_average.glacier->blue);
+	printf("Mountains:Rosu:%.2f,Green:%.2f,Albastru:%.2f\n", class_average.mountains->red, class_average.mountains->green, class_average.mountains->blue);
+	printf("Street:Rosu:%.2f,Green:%.2f,Albastru:%.2f\n", class_average.street->red, class_average.street->green, class_average.street->blue);
+	printf("Sea:Rosu:%.2f,Green:%.2f,Albastru:%.2f\n", class_average.sea->red, class_average.sea->green, class_average.sea->blue);
+}
 
 int main()
 {
@@ -690,8 +830,16 @@ int main()
 	for (int i = 0; i < new_test_size; i++) {
 		new_test_list[i] = train_list[i + new_train_size];
 	}
+	average_class class_average;
+	class_average.buildings = (color*)calloc(1, sizeof(color));
+	class_average.forests = (color*)calloc(1, sizeof(color));
+	class_average.glacier = (color*)calloc(1, sizeof(color));
+	class_average.mountains = (color*)calloc(1, sizeof(color));
+	class_average.sea = (color*)calloc(1, sizeof(color));
+	class_average.street = (color*)calloc(1, sizeof(color));
+	getAverages(&class_average, new_train_list, new_train_size);
 	//array cu etichetele generate random pentru test 
-	int* etichete_generate = generare_etichete_smart2(new_test_list,new_test_size);
+	int* etichete_generate = generare_etichete_smart2(new_test_list,new_test_size,&class_average);
 
 	int counter = 0;
 	float confusionMatrix[6][6] = { 0 };
@@ -715,6 +863,7 @@ int main()
 		printf(" 5 - Afisare etichete generate random (pt test)\n");
 		printf(" 6 - Afisare acuratete\n");
 		printf(" 7 - Afisare matrice de confuzie\n");
+		printf(" 8 - Afisare procente clase\n");
 		printf(" 0 - Exit\n\n");
 		printf("Option: ");
 		//scanf("%d", &op);
@@ -742,6 +891,9 @@ int main()
 			break;
 		case 7:
 			normalizeAndPrintConfusionMatrix(confusionMatrix);
+			break;
+		case 8:
+			afisareClase(class_average);
 			break;
 		}
 	} while (op != 0);
