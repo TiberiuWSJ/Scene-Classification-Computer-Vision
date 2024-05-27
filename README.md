@@ -26,7 +26,7 @@ The original dataset had two sets of pictures, train and test. Unfortunately, th
   - since the labels are equally distributed in the dataset, we decided to split the original test dataset in half. The first half is the new train dataset and the second half is the new test set.
 #### void show_split_train(Train_Element* new_train_list, Train_Element* new_test_list, int new_train_size, int new_test_size)
  - this function prints the lists on the screen, given the lists and their sizes
-![print function](images/1.PNG "Show split train function")
+![print function](/images/1.PNG "Show split train function")
 
 ### Afisare etichete generate random (pt test)
 The first step to our project, after splitting the dataset and managing to store it into memory, was to generate random labels for each picture. For this, the following functions were used:
