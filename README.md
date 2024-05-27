@@ -17,4 +17,38 @@ In this project, we tackle the challenge of classifying images of natural scenes
 ## Features
 ![App menu](images/menu.png "App menu")
 
+This is the main menu of the app. It contains a list of operations that can be done on the dataset, but we will focus on options 4 through 8.
+
+### Afisare liste train si test
+The original dataset had two sets of pictures, train and test. Unfortunately, the test set had no labels. Because of this, we decided to split the original train set in two new sets: a new train set and a new test set. To achieve this, we used the following functions:
+#### char** read_test(const char* path, int* numRows)
+  - given the path to a .csv file and the size of the file, this function reads a CSV file containing test data. It loads the CSV into memory, storing each row in a dynamically allocated list. The function returns a list of strings where each string is a line from the CSV.
+  - since the labels are equally distributed in the dataset, we decided to split the original test dataset in half. The first half is the new train dataset and the second half is the new test set.
+#### void show_split_train(Train_Element* new_train_list, Train_Element* new_test_list, int new_train_size, int new_test_size)
+ - this function prints the lists on the screen, given the lists and their sizes
+![print function](images/1.PNG "Show split train function")
+
+### Afisare etichete generate random (pt test)
+The first step to our project, after splitting the dataset and managing to store it into memory, was to generate random labels for each picture. For this, the following functions were used:
+#### int* generare_etichete(int size_list)
+ - given the size of the list, this function generates random labels (between 1 and 6). It returns an array of randomly generated labels.
+ ![print function](images/2.PNG "Show each image and the generated label")
+
+ ### Afisare acuratete 
+ In order to see the final result, we created a function that computes the accuracy. This is achieved using the following function: 
+ #### float calcul_acuratete(Train_Element* original, int* generate, int size)
+  - given the original list with the pictures and labels, the list of generated labels and their sizes, the result will be the accuracy.
+  - the final result we managed to get is 0.31, as seen in the picture below. 
+ ![print function](images/3.PNG "Show accuracy")
+
+ ### Afisare matrice de confuzie
+ Generate Smart Labels with Confusion Matrix: This option reads training data, calculates class averages for colors, and uses these averages to generate smart labels based on the RGB percentages of each image. It then calculates a confusion matrix and displays it to show the accuracy of the label generation. Done with the following function:
+ #### void normalizeAndPrintConfusionMatrix(float matrix[6][6])
+ ![print function](images/4.PNG "Confusion matrix")
+
+### Afisare procente clase
+Get Class Averages: This function calculates the average color values (RGB) for each scene class in the training list. It iterates through the training images, computes their color percentages, and updates the averages for each class. Done with the following function: 
+#### void getAverages(average_class* class_average, Train_Element* train_list, int train_size)
+
+ ![print function](images/5.PNG "Class percetages")
 
