@@ -3,6 +3,13 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+1.PNG
+2.PNG
+3.PNG
+4.PNG
+5.PNG
+menu.PNG
+
 # User-specific files
 *.rsuser
 *.suo
@@ -360,9 +367,3 @@ MigrationBackup/
 /stdafx.h
 /targetver.h
 /Videos
-1.png
-2.png
-3.png
-4.png
-5.png
-menu.png
