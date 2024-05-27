@@ -15,5 +15,6 @@ In this project, we tackle the challenge of classifying images of natural scenes
 6.**Sea**
 
 ## Features
+(images/menu.png)
 
 
