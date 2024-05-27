@@ -15,7 +15,7 @@ In this project, we tackle the challenge of classifying images of natural scenes
 6.**Sea**
 
 ## Features
-![App menu](images/menu.png "App menu")
+![App menu](menu.png "App menu")
 
 This is the main menu of the app. It contains a list of operations that can be done on the dataset, but we will focus on options 4 through 8.
 
@@ -26,14 +26,14 @@ The original dataset had two sets of pictures, train and test. Unfortunately, th
   - since the labels are equally distributed in the dataset, we decided to split the original test dataset in half. The first half is the new train dataset and the second half is the new test set.
 #### void show_split_train(Train_Element* new_train_list, Train_Element* new_test_list, int new_train_size, int new_test_size)
  - this function prints the lists on the screen, given the lists and their sizes
-![print function](/images/1.PNG "Show split train function")
+![print function](1.PNG "Show split train function")
 
 ### Afisare etichete generate random (pt test)
 The first step to our project, after splitting the dataset and managing to store it into memory, was to generate random labels for each picture. For this, the following functions were used:
 #### int* generare_etichete(int size_list)
  - given the size of the list, this function generates random labels (between 1 and 6). It returns an array of randomly generated labels.  
 
- ![print function](images/2.PNG "Show each image and the generated label")  
+ ![print function](2.PNG "Show each image and the generated label")  
 
 
  ### Afisare acuratete 
@@ -42,14 +42,14 @@ The first step to our project, after splitting the dataset and managing to store
   - given the original list with the pictures and labels, the list of generated labels and their sizes, the result will be the accuracy.
   - the final result we managed to get is 0.31, as seen in the picture below.  
 
- ![print function](images/3.PNG "Show accuracy")  
+ ![print function](3.PNG "Show accuracy")  
 
 
  ### Afisare matrice de confuzie
  Generate Smart Labels with Confusion Matrix: This option reads training data, calculates class averages for colors, and uses these averages to generate smart labels based on the RGB percentages of each image. It then calculates a confusion matrix and displays it to show the accuracy of the label generation. Done with the following function:
  #### void normalizeAndPrintConfusionMatrix(float matrix[6][6])  
 
- ![print function](images/4.PNG "Confusion matrix")  
+ ![print function](4.PNG "Confusion matrix")  
 
 
 ### Afisare procente clase
@@ -57,7 +57,7 @@ Get Class Averages: This function calculates the average color values (RGB) for 
 #### void getAverages(average_class* class_average, Train_Element* train_list, int train_size)  
 
 
- ![print function](images/5.PNG "Class percetages")  
+ ![print function](5.PNG "Class percetages")  
 
 
 ## Structures used to store the data  
