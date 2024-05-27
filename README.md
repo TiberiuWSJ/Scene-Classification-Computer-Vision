@@ -31,24 +31,59 @@ The original dataset had two sets of pictures, train and test. Unfortunately, th
 ### Afisare etichete generate random (pt test)
 The first step to our project, after splitting the dataset and managing to store it into memory, was to generate random labels for each picture. For this, the following functions were used:
 #### int* generare_etichete(int size_list)
- - given the size of the list, this function generates random labels (between 1 and 6). It returns an array of randomly generated labels.
- ![print function](images/2.PNG "Show each image and the generated label")
+ - given the size of the list, this function generates random labels (between 1 and 6). It returns an array of randomly generated labels.  
+
+ ![print function](images/2.PNG "Show each image and the generated label")  
+
 
  ### Afisare acuratete 
  In order to see the final result, we created a function that computes the accuracy. This is achieved using the following function: 
  #### float calcul_acuratete(Train_Element* original, int* generate, int size)
   - given the original list with the pictures and labels, the list of generated labels and their sizes, the result will be the accuracy.
-  - the final result we managed to get is 0.31, as seen in the picture below. 
- ![print function](images/3.PNG "Show accuracy")
+  - the final result we managed to get is 0.31, as seen in the picture below.  
+
+ ![print function](images/3.PNG "Show accuracy")  
+
 
  ### Afisare matrice de confuzie
  Generate Smart Labels with Confusion Matrix: This option reads training data, calculates class averages for colors, and uses these averages to generate smart labels based on the RGB percentages of each image. It then calculates a confusion matrix and displays it to show the accuracy of the label generation. Done with the following function:
- #### void normalizeAndPrintConfusionMatrix(float matrix[6][6])
- ![print function](images/4.PNG "Confusion matrix")
+ #### void normalizeAndPrintConfusionMatrix(float matrix[6][6])  
+
+ ![print function](images/4.PNG "Confusion matrix")  
+
 
 ### Afisare procente clase
 Get Class Averages: This function calculates the average color values (RGB) for each scene class in the training list. It iterates through the training images, computes their color percentages, and updates the averages for each class. Done with the following function: 
-#### void getAverages(average_class* class_average, Train_Element* train_list, int train_size)
+#### void getAverages(average_class* class_average, Train_Element* train_list, int train_size)  
 
- ![print function](images/5.PNG "Class percetages")
 
+ ![print function](images/5.PNG "Class percetages")  
+
+
+## Structures used to store the data  
+
+```
+typedef struct {
+	char* nume_poza;
+	int eticheta;
+}Train_Element;
+
+typedef struct {
+	float red;
+	float green;
+	float blue;
+}color;
+
+typedef struct {
+	color* buildings;
+	color* forests;
+	color* mountains;
+	color* glacier;
+	color* street;
+	color* sea;
+}average_class;
+
+```
+
+After reading the csv file, to store the data into memory, we used the Train_Element struct. It contais the name of the picture, stored in "nume_poza" and the label of the picture, stored in "eticheta".
+The color struct, was used to store the percentage of red, green and blue, found in each picture, and the average_class struct was used to group the average percentages of said colors (R, G, B) for each class.
