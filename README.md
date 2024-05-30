@@ -14,6 +14,20 @@ In this project, we tackle the challenge of classifying images of natural scenes
 
 6.**Sea**
 
+## Running the app
+When running, the app requires you to provide two paths, the first one is the path to the original csv. And the second is the path to the pictures directory.  
+
+Examples:  
+```
+Path to images:
+
+"C:\Users\Razvan\Documents\utcn\UTCN\An 3\Sem 2\PI\kaggle dataset\train-scene classification\train\"
+
+Path to csv:
+
+"C:\Users\Razvan\Documents\utcn\UTCN\An 3\Sem 2\PI\kaggle dataset\train-scene classification\train.csv"
+```
+
 ## Features
 ![App menu](menu.png "App menu")
 
@@ -141,3 +155,4 @@ Actual picture:
 As we can see, this is a picture of some mountains, so the correct label would, indeed, be 3.
 
 
+### 2. 
