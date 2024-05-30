@@ -49,7 +49,7 @@ The first step to our project, after splitting the dataset and managing to store
  Generate Smart Labels with Confusion Matrix: This option reads training data, calculates class averages for colors, and uses these averages to generate smart labels based on the RGB percentages of each image. It then calculates a confusion matrix and displays it to show the accuracy of the label generation. Done with the following function:
  #### void normalizeAndPrintConfusionMatrix(float matrix[6][6])  
 
- ![print function](4.PNG "Confusion matrix")  
+ ![print function](confusion.png "Confusion matrix")  
 
 
 ### Afisare procente clase
@@ -87,3 +87,51 @@ typedef struct {
 
 After reading the csv file, to store the data into memory, we used the Train_Element struct. It contais the name of the picture, stored in "nume_poza" and the label of the picture, stored in "eticheta".
 The color struct, was used to store the percentage of red, green and blue, found in each picture, and the average_class struct was used to group the average percentages of said colors (R, G, B) for each class.
+
+
+## Experiments
+### 1. Randomly generating labels
+
+As a first step to get some sort of accuracy, we tried randomly generating labels for each picture and comparing the results. 
+The function used to randomly generate labels is the following: 
+```
+int* generare_etichete(int size_list) {
+	srand(time(NULL));
+
+	//facem un nou vector pentru noile etichete generate random
+	int* etichete_generate = NULL;
+	int size_etichete_generate = size_list;
+	etichete_generate = (int*)malloc(size_etichete_generate * sizeof(int));
+
+	for (int i = 0; i < size_etichete_generate; i++) {
+		//generare eticheta random 1-6
+		int random_number = 1 + rand() % (6 - 1 + 1);
+		etichete_generate[i] = random_number;
+	}
+	return etichete_generate;
+}
+```
+The final accuracy for the first project is:
+![print function](random_acc.png "Acc for random")  
+
+Example of a poorly classified picture:
+
+Original label:
+![print function](random_fail_1.png "Acc for random")  
+Generated label:  
+![print function](random_fail_2.png "Acc for random")  
+Actual picture:
+![print function](24334.jpg "Acc for random")  
+As we can see, this is a picture of some mountains, so the correct label would, indeed, be 3.
+
+Example of a correctly classified picture:
+
+Original label:
+![print function](random_ok_1.png "Acc for random")  
+Generated label:  
+![print function](random_ok_2.png "Acc for random")  
+Actual picture:
+![print function](24328.jpg "Acc for random")  
+As we can see, this is a picture of some mountains, so the correct label would, indeed, be 3.
+
+
