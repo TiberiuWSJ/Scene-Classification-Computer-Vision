@@ -125,7 +125,7 @@ int* generare_etichete(int size_list) {
 	return etichete_generate;
 }
 ```
-The final accuracy for the first project is:  
+The final accuracy for the first experiment is:  
 
 ![print function](random_acc.png "Acc for random")  
 
@@ -139,7 +139,7 @@ Generated label:
 Actual picture:  
 
 ![print function](24334.jpg "Acc for random")  
-As we can see, this is a picture of some mountains, so the correct label would, indeed, be 3.
+As we can see, this is a picture of some mountains, so the label is incorrect.
 
 Example of a correctly classified picture:
 
@@ -152,7 +152,151 @@ Actual picture:
 
 ![print function](24328.jpg "Acc for random")    
 
-As we can see, this is a picture of some mountains, so the correct label would, indeed, be 3.
+As we can see, this is a picture of some mountains, so the label is correct.
 
 
-### 2. 
+### 2. Generating labels based on the on the dominant color percentage in the images.  
+
+To better our accuracy, the next experiment we tried is to generated the labels based on the dominant color in the images.  
+
+The function used to compute the colors is the following:  
+
+```
+int* generare_etichete_smart(Train_Element* original,int size_list, char* copied_path) {
+	srand(time(NULL));
+
+	//facem un nou vector pentru noile etichete generate random
+	int* etichete_generate = NULL;
+	int size_etichete_generate = size_list;
+	etichete_generate = (int*)malloc(size_etichete_generate * sizeof(int));
+	int lungime_path = strlen(copied_path);
+	float* procentaje = NULL;
+	procentaje = (float*)calloc(3, sizeof(float));
+
+	for (int i = 0; i < size_etichete_generate; i++) {
+		//generare eticheta random 1-6
+		char* poza = original[i].nume_poza;
+		int lungime_poza = strlen(poza) + lungime_path + 1;
+		char* path_poza = new char[lungime_poza];
+		strcpy(path_poza, copied_path);
+		strcat(path_poza, poza);
+		printf("%s\n", path_poza);
+		showHistogram_poza(&procentaje, path_poza);
+		int random_number = 1 + rand() % (2 - 1 + 1);
+		int culoare = -1;
+		float maxim = -1.0f;
+		for (int j = 0; j < 3; j++) {
+			if (procentaje[j] > maxim) {
+				culoare = j;
+				maxim = procentaje[j];
+			}
+		}
+		if (culoare == 0) {
+			if (random_number == 1) {
+				etichete_generate[i] = 4;
+			}
+			else {
+				etichete_generate[i] = 6;
+			}
+		}
+		else {
+			if (culoare == 1) {
+				if (random_number == 1) {
+					etichete_generate[i] = 2;
+				}
+				else {
+					etichete_generate[i] = 3;
+				}
+			}
+			else {
+				if (random_number == 1) {
+					etichete_generate[i] = 1;
+				}
+				else {
+					etichete_generate[i] = 5;
+				}
+			}
+		}
+		printf("Albastru:%.2f%%,Verde:%.2f%%,Rosu:%.2f%% --Eticheta:%d\n", procentaje[0], procentaje[1], procentaje[2], etichete_generate[i]);
+	}
+	free(procentaje);
+	return etichete_generate;
+}
+
+```  
+The final accuracy for the second experiment is:  
+
+![print function](acc_gen.png "Acc for second exp")  
+
+Example of a poorly classified picture:
+
+Original label:  
+
+![print function](proc_fail_1.png "Acc for random")  
+Generated label:  
+![print function](proc_fail_2.png "Acc for random")  
+Actual picture:  
+
+![print function](24334.jpg "Acc for random")  
+As we can see, this is a picture of some mountains, so the label is incorrect.
+
+Example of a correctly classified picture:
+
+Original label:  
+
+![print function](proc_ok_2.png "Acc for random")  
+Generated label:  
+![print function](proc_ok_1.png "Acc for random")  
+Actual picture:  
+
+![print function](24328.jpg "Acc for random")    
+
+As we can see, this is a picture of some mountains, so the label is correct.
+
+## 3. Calculating the average color value (RGB) for each scene class in the list
+
+The third experiment consists of calculating the average color values (RGB) for each scene class in the training list. The function used iterates through the training images, computes their color percentages, and updates the averages for each class.
+
+```
+int* generare_etichete_smart2(Train_Element* original, int size_list,average_class *class_average, char* copied_path) {
+	srand(time(NULL));
+
+	//facem un nou vector pentru noile etichete generate random
+	int* etichete_generate = NULL;
+	int size_etichete_generate = size_list;
+	etichete_generate = (int*)malloc(size_etichete_generate * sizeof(int));
+	int lungime_path = strlen(copied_path);
+	float* procentaje = NULL;
+	procentaje = (float*)calloc(3, sizeof(float));
+
+	for (int i = 0; i < size_etichete_generate; i++) {
+		//generare eticheta random 1-6
+		char* poza = original[i].nume_poza;
+		int lungime_poza = strlen(poza) + lungime_path + 1;
+		char* path_poza = new char[lungime_poza];
+		strcpy(path_poza, copied_path);
+		strcat(path_poza, poza);
+		printf("%s\n", path_poza);
+		showHistogram_poza(&procentaje, path_poza);
+		int random_number = 1 + rand() % (2 - 1 + 1);
+		int culoare = -1;
+		float maxim = -1.0f;
+		for (int j = 0; j < 3; j++) {
+			if (procentaje[j] > maxim) {
+				culoare = j;
+				maxim = procentaje[j];
+			}
+		}
+		etichete_generate[i] = clasificaScena2(procentaje,class_average);
+	}
+	free(procentaje);
+	return etichete_generate;
+}
+```
+
+The final accuracy for the third experiment is:  
+
+![print function](finacc.png "Acc for third exp")  
+
+
+ ![print function](5.PNG "Class percetages")  
