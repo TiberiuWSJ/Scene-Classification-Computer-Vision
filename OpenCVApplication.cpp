@@ -92,6 +92,30 @@ void testColor2Gray()
 	}
 }
 
+char* get_path() {
+	printf("Enter the path: \n ");
+
+	char* path = (char*)malloc(1024 * sizeof(char));
+	if (!path) {
+		perror("Memory allocation failed");
+		exit(EXIT_FAILURE);
+	}
+
+	if (!fgets(path, 1024, stdin)) {
+		free(path);
+		perror("Error reading input");
+		exit(EXIT_FAILURE);
+	}
+
+	// Removing trailing newline character, if any
+	size_t len = strlen(path);
+	if (len > 0 && path[len - 1] == '\n') {
+		path[len - 1] = '\0';
+	}
+
+	return path;
+}
+
 //Functie care citeste csv-ul orifinal cu test
 char** read_test(const char* path, int* numRows) {
 	FILE* file = fopen(path, "r"); 
@@ -345,14 +369,13 @@ int* generare_etichete(int size_list) {
 	return etichete_generate;
 }
 
-int* generare_etichete_smart(Train_Element* original,int size_list) {
+int* generare_etichete_smart(Train_Element* original,int size_list, char* copied_path) {
 	srand(time(NULL));
 
 	//facem un nou vector pentru noile etichete generate random
 	int* etichete_generate = NULL;
 	int size_etichete_generate = size_list;
 	etichete_generate = (int*)malloc(size_etichete_generate * sizeof(int));
-	const char* copied_path = "D:\\3_II\\PI\\OpenCV\\OpenCVApplication-VS2022_OCV490_basic\\OpenCVApplication-VS2022_OCV490_basic\\Images\\train-scene-classification\\train\\";
 	int lungime_path = strlen(copied_path);
 	float* procentaje = NULL;
 	procentaje = (float*)calloc(3, sizeof(float));
@@ -480,14 +503,13 @@ int clasificaScena2(float* procente, average_class* class_average) {
 
 
 
-int* generare_etichete_smart2(Train_Element* original, int size_list,average_class *class_average) {
+int* generare_etichete_smart2(Train_Element* original, int size_list,average_class *class_average, char* copied_path) {
 	srand(time(NULL));
 
 	//facem un nou vector pentru noile etichete generate random
 	int* etichete_generate = NULL;
 	int size_etichete_generate = size_list;
 	etichete_generate = (int*)malloc(size_etichete_generate * sizeof(int));
-	const char* copied_path = "D:\\3_II\\PI\\OpenCV\\OpenCVApplication-VS2022_OCV490_basic\\OpenCVApplication-VS2022_OCV490_basic\\Images\\train-scene-classification\\train\\";
 	int lungime_path = strlen(copied_path);
 	float* procentaje = NULL;
 	procentaje = (float*)calloc(3, sizeof(float));
@@ -548,8 +570,9 @@ void show_split_train(Train_Element* new_train_list, Train_Element* new_test_lis
 
 }
 
-void getAverages(average_class* class_average, Train_Element* train_list, int train_size) {
-	const char* copied_path = "D:\\3_II\\PI\\OpenCV\\OpenCVApplication-VS2022_OCV490_basic\\OpenCVApplication-VS2022_OCV490_basic\\Images\\train-scene-classification\\train\\";
+void getAverages(average_class* class_average, Train_Element* train_list, int train_size, char* copied_path) {
+	//const char* copied_path = "C:\\Users\\Razvan\\Documents\\utcn\\UTCN\\An 3\\Sem 2\\PI\\kaggle dataset\\train-scene classification\\train\\";
+	//const char* copied_path = get_path();
 	int lungime_path = strlen(copied_path);
 	float* procentaje = (float*)calloc(3, sizeof(float));
 
@@ -662,20 +685,20 @@ void normalizeAndPrintConfusionMatrix(float matrix[6][6]) {
 	int dataWidth = 10;   // Width for data columns
 
 	// Calculate the sum of elements for each row
-	float rowSum[6] = { 0 };
+	/*float rowSum[6] = { 0 };
 	for (int i = 0; i < numClasses; i++) {
 		for (int j = 0; j < numClasses; j++) {
 			rowSum[i] += matrix[i][j];
 		}
-	}
+	}*/
 
 	// Normalize each element by the row sum
-	for (int i = 0; i < numClasses; i++) {
-		for (int j = 0; j < numClasses; j++) {
-			if (rowSum[i] != 0) // Prevent division by zero
-				matrix[i][j] /= rowSum[i];
-		}
-	}
+	//for (int i = 0; i < numClasses; i++) {
+	//	for (int j = 0; j < numClasses; j++) {
+	//		if (rowSum[i] != 0) // Prevent division by zero
+	//			matrix[i][j] /= rowSum[i];
+	//	}
+	//}
 
 	// Print header with proper alignment
 	std::cout << std::right << std::setw(labelWidth) << " "; // Space for the row labels
@@ -756,30 +779,6 @@ void clearInputBuffer() {
 }
 
 
-char* get_path() {
-	printf("Enter the path to the original train.csv file: ");
-
-	char* path = (char*)malloc(1024 * sizeof(char));
-	if (!path) {
-		perror("Memory allocation failed");
-		exit(EXIT_FAILURE);
-	}
-
-	if (!fgets(path, 1024, stdin)) {
-		free(path);
-		perror("Error reading input");
-		exit(EXIT_FAILURE);
-	}
-
-	// Removing trailing newline character, if any
-	size_t len = strlen(path);
-	if (len > 0 && path[len - 1] == '\n') {
-		path[len - 1] = '\0';
-	}
-
-	return path;
-}
-
 void afisareClase(average_class class_average) {
 	printf("Buildings:Rosu:%.2f,Green:%.2f,Albastru:%.2f\n", class_average.buildings->red, class_average.buildings->green, class_average.buildings->blue);
 	printf("Forests:Rosu:%.2f,Green:%.2f,Albastru:%.2f\n", class_average.forests->red, class_average.forests->green, class_average.forests->blue);
@@ -791,8 +790,10 @@ void afisareClase(average_class class_average) {
 
 int main()
 {
-
+	printf("Enter the path to the original train.csv file: \n");
 	char* path = get_path();
+	printf("Enter the path to pictures directory: \n");
+	char* path_to_pictures_dir = get_path();
 	char* copied_path = (char*)malloc(sizeof(char) * (strlen(path) + 1));
 	strcpy(copied_path, path);
 	//char* path = NULL;
@@ -837,9 +838,9 @@ int main()
 	class_average.mountains = (color*)calloc(1, sizeof(color));
 	class_average.sea = (color*)calloc(1, sizeof(color));
 	class_average.street = (color*)calloc(1, sizeof(color));
-	getAverages(&class_average, new_train_list, new_train_size);
-	//array cu etichetele generate random pentru test 
-	int* etichete_generate = generare_etichete_smart2(new_test_list,new_test_size,&class_average);
+	getAverages(&class_average, new_train_list, new_train_size, path_to_pictures_dir);
+	int* etichete_generate = generare_etichete_smart2(new_test_list,new_test_size,&class_average, path_to_pictures_dir);
+	//int* etichete_generate = generare_etichete_smart(new_test_list,new_test_size, path_to_pictures_dir);
 
 	int counter = 0;
 	float confusionMatrix[6][6] = { 0 };
