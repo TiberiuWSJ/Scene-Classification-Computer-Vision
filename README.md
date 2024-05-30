@@ -111,27 +111,33 @@ int* generare_etichete(int size_list) {
 	return etichete_generate;
 }
 ```
-The final accuracy for the first project is:
+The final accuracy for the first project is:  
+
 ![print function](random_acc.png "Acc for random")  
 
 Example of a poorly classified picture:
 
-Original label:
+Original label:  
+
 ![print function](random_fail_1.png "Acc for random")  
 Generated label:  
 ![print function](random_fail_2.png "Acc for random")  
-Actual picture:
+Actual picture:  
+
 ![print function](24334.jpg "Acc for random")  
 As we can see, this is a picture of some mountains, so the correct label would, indeed, be 3.
 
 Example of a correctly classified picture:
 
-Original label:
+Original label:  
+
 ![print function](random_ok_1.png "Acc for random")  
 Generated label:  
 ![print function](random_ok_2.png "Acc for random")  
-Actual picture:
-![print function](24328.jpg "Acc for random")  
+Actual picture:  
+
+![print function](24328.jpg "Acc for random")    
+
 As we can see, this is a picture of some mountains, so the correct label would, indeed, be 3.
 
 
